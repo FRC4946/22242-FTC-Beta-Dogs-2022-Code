@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -36,6 +37,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.  ftc.teamcode.PIDController;
 
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
@@ -50,9 +57,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear Mecanum OpMode - BETA DOGS", group="Linear Opmode")
+@TeleOp(name="Basic: Linear Mecanum OpMode PID TUNING - BETA DOGS", group="Linear Opmode")
 //@Disabled
-public class MecanumOpMode extends LinearOpMode {
+public class PIDTuning extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
@@ -62,6 +69,11 @@ public class MecanumOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private DcMotor liftMotor = null;
     private Servo claw = null;
+    private PIDController pid = null;
+    private BNO055IMU imu = null;
+
+    private Orientation lastAngles = new Orientation();
+    private double robotHeading = 0;
 
     @Override
     public void runOpMode() {
@@ -78,7 +90,17 @@ public class MecanumOpMode extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "back right drive");
         liftMotor = hardwareMap.get(DcMotor.class, "lift motor");
         claw = hardwareMap.get(Servo.class, "claw"); // needs to be looked into, acting up, likely hardware.
+        pid = new PIDController(0.055, 0, 0);
 
+
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit            = BNO055IMU.AngleUnit.DEGREES;
+        parameters.mode                 = BNO055IMU.SensorMode.IMU;
+        parameters.accelUnit            = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled       = false;
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
@@ -117,25 +139,54 @@ public class MecanumOpMode extends LinearOpMode {
             // bull (relating to claw servo)
             if (gamepad1.a)
             {
-                claw.setPosition(0.8);
+                pid.setSetpoint(90);
+                double power = pid.calculate(getAngle());
+                if (power > 0) {
+                    leftFrontDrive.setPower(Math.copySign(power, -1));
+                    rightFrontDrive.setPower(Math.copySign(power, 1));
+                    leftBackDrive.setPower(Math.copySign(power, -1));
+                    rightBackDrive.setPower(Math.copySign(power, 1));
+                } else if (power < 0) {
+                    leftFrontDrive.setPower(Math.copySign(power, 1));
+                    rightFrontDrive.setPower(Math.copySign(power, -1));
+                    leftBackDrive.setPower(Math.copySign(power, 1));
+                    rightBackDrive.setPower(Math.copySign(power, -1));
+                }
             }
             else if (gamepad1.b)
             {
-                claw.setPosition(0.0);
+                pid.setSetpoint(0);
+                double power = pid.calculate(getAngle());
+                if (power > 0) {
+                    leftFrontDrive.setPower(Math.copySign(power, -1));
+                    rightFrontDrive.setPower(Math.copySign(power, 1));
+                    leftBackDrive.setPower(Math.copySign(power, -1));
+                    rightBackDrive.setPower(Math.copySign(power, 1));
+                } else if (power < 0) {
+                    leftFrontDrive.setPower(Math.copySign(power, 1));
+                    rightFrontDrive.setPower(Math.copySign(power, -1));
+                    leftBackDrive.setPower(Math.copySign(power, 1));
+                    rightBackDrive.setPower(Math.copySign(power, -1));
+                }
+            }
+            else {
+                leftFrontDrive.setPower(0);
+                rightFrontDrive.setPower(0);
+                leftBackDrive.setPower(0);
+                rightBackDrive.setPower(0);
             }
 
             // bull (relating to elevator)
-            if (gamepad1.left_trigger > 0.0)
+            if (gamepad1.dpad_up)
             {
-                liftMotor.setPower(gamepad1.left_trigger * -1);
+                pid.setP(pid.getP() + 0.01);
+                sleep(500);
             }
-            else if (gamepad1.right_trigger > 0.0) {
-                liftMotor.setPower(gamepad1.right_trigger);
+            else if (gamepad1.dpad_down)
+            {
+                pid.setP(pid.getP() - 0.01);
+                sleep(500);
             }
-            else {
-                liftMotor.setPower(0);
-            }
-
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
 
@@ -149,7 +200,34 @@ public class MecanumOpMode extends LinearOpMode {
             telemetry.addLine("claw servo pos: " + claw.getPosition());
             telemetry.addLine("Lift Power: " + liftMotor.getPower());
 
+            telemetry.addLine("PID P: " + pid.getP());
+
             telemetry.update();
         }
+
     }
+
+    void resetAngle() {
+        lastAngles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        robotHeading = 0;
+    }
+    // because I can't find any docs on the gyro and how it works, im ctrl + c and ctrl + v ing code
+    // and so the ppl i copied from have angles set to + and - 180
+    // not 360
+    // because imu idfk
+    double getAngle() {
+        Orientation currentAngle = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double deltaAngle = currentAngle.firstAngle - lastAngles.firstAngle;
+
+        if (deltaAngle < -180)
+            deltaAngle += 360;
+        else if (deltaAngle > 180)
+            deltaAngle -= 360;
+
+        robotHeading += deltaAngle;
+
+        lastAngles = currentAngle;
+        return robotHeading;
+    }
+
 }

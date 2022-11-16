@@ -45,13 +45,13 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
     // UNITS ARE PIXELS
     // NOTE: this calibration is for the C270 at default res
     // You will need to do your own calibration for other configurations!
-    double fx = 964.9720651044612;
-    double fy = 961.9626539642991;
-    double cx = 302.93306542423454;
-    double cy = 237.66599433445498;
+    double fx = 985.4318958505312;
+    double fy = 982.8510144217059;
+    double cx = 353.64477664507393;
+    double cy = 263.136868520393;
 
     // UNITS ARE METERS
-    double tagsize = 0.166;
+    double tagsize = 0.04;
 
     int ID_TAG_OF_INTEREST = 3; // Tag ID 18 from the 36h11 family
 
