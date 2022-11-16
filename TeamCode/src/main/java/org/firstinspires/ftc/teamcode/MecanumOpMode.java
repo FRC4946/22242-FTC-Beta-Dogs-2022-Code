@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -59,7 +60,8 @@ public class MecanumOpMode extends LinearOpMode {
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
-
+    private DcMotor liftMotor = null;
+    private Servo claw = null;
 
     @Override
     public void runOpMode() {
@@ -74,15 +76,17 @@ public class MecanumOpMode extends LinearOpMode {
         rightFrontDrive = hardwareMap.get(DcMotor.class, "front right drive");
         leftBackDrive  = hardwareMap.get(DcMotor.class, "back left drive");
         rightBackDrive = hardwareMap.get(DcMotor.class, "back right drive");
+        liftMotor = hardwareMap.get(DcMotor.class, "lift motor");
+        claw = hardwareMap.get(Servo.class, "claw");
 
 
         // To drive forward, most robots need the motor on one side to be reversed, because the axles point in opposite directions.
         // Pushing the left stick forward MUST make robot go forward. So adjust these two lines based on your first test drive.
         // Note: The settings here assume direct drive on left and right wheels.  Gear Reduction or 90 Deg drives may require direction flips
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -109,6 +113,30 @@ public class MecanumOpMode extends LinearOpMode {
             rightFrontDrive.setPower(frontRightPower);
             rightBackDrive.setPower(backRightPower);
 
+
+            // bull (relating to claw servo)
+            if (gamepad1.a)
+            {
+                claw.setPosition(1.0);
+            }
+            else if (gamepad1.b)
+            {
+                claw.setPosition(0.0);
+
+            }
+
+            // bull (relating to elevator)
+            if (gamepad1.left_trigger > 0.0)
+            {
+                liftMotor.setPower(gamepad1.left_trigger * -1);
+            }
+            else if (gamepad1.right_trigger > 0.0) {
+                liftMotor.setPower(gamepad1.right_trigger);
+            }
+            else {
+                liftMotor.setPower(0);
+            }
+
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addLine("Motors")
@@ -116,6 +144,9 @@ public class MecanumOpMode extends LinearOpMode {
                     .addData("Front Right (%.2f)", frontRightPower)
                     .addData("Back Left (%.2f)", backLeftPower)
                     .addData("Back Right (%.2f)", backRightPower);
+            telemetry.addLine("Elevator")
+                    .addData("claw servo pos (%.2f)", claw.getPosition())
+                    .addData("placeholder (%.2f)", 1);
             telemetry.update();
         }
     }

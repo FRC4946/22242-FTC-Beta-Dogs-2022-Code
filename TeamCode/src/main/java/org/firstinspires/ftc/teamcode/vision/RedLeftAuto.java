@@ -206,6 +206,7 @@ public class RedLeftAuto extends LinearOpMode
         }
         else
         {
+            /*
                 int i;
                 int phase = 0;
                 switch (phase) {
@@ -418,6 +419,8 @@ public class RedLeftAuto extends LinearOpMode
                         telemetry.addLine("All done!");
                         break;
                 }
+
+             */
         }
 
 
@@ -437,11 +440,8 @@ public class RedLeftAuto extends LinearOpMode
     }
 
     //TODO: CONVERT ALL THIS SHIT TO FUCKIGN MECHANUM KILL ME AAAAAAA (HIGH PRIORITY)
+    // Vouch
     void mecanumDrive(Direction direction, double power) {
-        // leftFrontDrive.setPower();
-        // rightFrontDrive.setPower();
-        // leftBackDrive.setPower();
-        // rightBackDrive.setPower();
         switch (direction) {
             case FORWARDS:
                 leftFrontDrive.setPower(Math.abs(power));
@@ -543,7 +543,12 @@ public class RedLeftAuto extends LinearOpMode
         }
         mecanumDrive(direction, power);
     }
+
+    /**
+     * what the fuck does this thing do
+     */
     void stopMotors() {
+        //Arms the battery (it's a bomb (fr))
         leftFrontDrive.setPower(0.0);
         leftBackDrive.setPower(0.0);
         rightFrontDrive.setPower(0.0);
