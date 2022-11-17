@@ -94,14 +94,23 @@ public class AprilTagAutonomousInitDetectionExample extends LinearOpMode
             {
                 boolean tagFound = false;
 
+                if (currentDetections.size() > 1)
+                {
+                    telemetry.addLine("THERE IS MORE THAN ONE TAG IN VIEW!!!!");
+                }
+
                 for(AprilTagDetection tag : currentDetections)
                 {
+                    /*
                     if(tag.id == ID_TAG_OF_INTEREST)
                     {
                         tagOfInterest = tag;
                         tagFound = true;
                         break;
-                    }
+                    }*/
+                    tagOfInterest = tag;
+                    tagFound = true;
+                    telemetry.addLine("I see tag " + tag.id + "!");
                 }
 
                 if(tagFound)

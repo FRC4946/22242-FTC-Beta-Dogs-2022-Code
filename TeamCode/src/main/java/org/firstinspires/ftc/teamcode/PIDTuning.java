@@ -44,6 +44,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.  ftc.teamcode.PIDController;
 
+// function just made to quickly tune the PID for rotation
+
 /**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
@@ -90,7 +92,7 @@ public class PIDTuning extends LinearOpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "back right drive");
         liftMotor = hardwareMap.get(DcMotor.class, "lift motor");
         claw = hardwareMap.get(Servo.class, "claw"); // needs to be looked into, acting up, likely hardware.
-        pid = new PIDController(0.055, 0, 0);
+        pid = new PIDController(0.055, 0.0, 0.0);
 
 
 
@@ -174,6 +176,25 @@ public class PIDTuning extends LinearOpMode {
                 rightFrontDrive.setPower(0);
                 leftBackDrive.setPower(0);
                 rightBackDrive.setPower(0);
+            }
+
+            if (gamepad1.y)
+            {
+                leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                leftFrontDrive.setTargetPosition(1440);
+                rightFrontDrive.setTargetPosition(1440);
+                leftBackDrive.setTargetPosition(1440);
+                rightBackDrive.setTargetPosition(1440);
+
+                leftFrontDrive.setPower(0.5);
+                rightFrontDrive.setPower(0.5);
+                leftBackDrive.setPower(0.5);
+                rightBackDrive.setPower(0.5);
+                sleep(1000);
             }
 
             // bull (relating to elevator)
