@@ -47,7 +47,7 @@ import org.firstinspires.ftc.teamcode.PIDController;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@Autonomous
+@Autonomous(name="Simple Park Auto")
 public class SimpleParkAuto extends LinearOpMode
 {
     OpenCvCamera camera;
@@ -57,6 +57,9 @@ public class SimpleParkAuto extends LinearOpMode
     private DcMotor rightFrontDrive = null;
     private DcMotor leftBackDrive = null;
     private DcMotor rightBackDrive = null;
+    //private Servo clawSpinner = null;
+    //private CRServo clawLeft = null;
+    //private CRServo clawRight = null;
     private BNO055IMU imu = null;
 
 
@@ -81,6 +84,8 @@ public class SimpleParkAuto extends LinearOpMode
     // UNITS ARE METERS
     double tagsize = 0.04;
 
+    int squareDist = 1863; //60cm / 49 * 360 * 4
+
     int phase = 0;
 
     int ID_TAG_OF_INTEREST = 3; // Tag ID 18 from the 36h11 family
@@ -98,15 +103,14 @@ public class SimpleParkAuto extends LinearOpMode
         rightFrontDrive = hardwareMap.get(DcMotor.class, "front right drive");
         leftBackDrive  = hardwareMap.get(DcMotor.class, "back left drive");
         rightBackDrive = hardwareMap.get(DcMotor.class, "back right drive");
-
         ////clawLeft = hardwareMap.get(CRServo.class, "left claw");
         ////clawRight = hardwareMap.get(CRServo.class, "right claw");
         ////clawSpinner = hardwareMap.get(Servo.class, "claw spinner");
 
-        leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
-        leftBackDrive.setDirection(DcMotor.Direction.REVERSE);
-        rightBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        leftFrontDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightFrontDrive.setDirection(DcMotor.Direction.REVERSE);
+        leftBackDrive.setDirection(DcMotor.Direction.FORWARD);
+        rightBackDrive.setDirection(DcMotor.Direction.REVERSE);
 
         leftFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         rightFrontDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -126,6 +130,7 @@ public class SimpleParkAuto extends LinearOpMode
         TARGET_TAGS.add(3);
 
         pid = new PIDController(p, i, d);
+        pid.setTolerance(2);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -174,10 +179,15 @@ public class SimpleParkAuto extends LinearOpMode
 
         telemetry.clearAll();
 
+
+
+
         // Does the code
         if(tagOfInterest == null)
         {
             telemetry.addLine("No tags!");
+            telemetry.update();
+            sleep(5000);
         }
         else
         {
@@ -186,30 +196,78 @@ public class SimpleParkAuto extends LinearOpMode
                     //turn 90 to left
                     pid.setSetpoint(-90);
                     while (!pid.atSetpoint()) {
+                        telemetry.addLine("rotate pid target -90\nPID Power: " + pid.calculate(getAngle()) + "\nAngle: " + getAngle());
+                        telemetry.addLine("At set point? " + pid.atSetpoint());
+                        telemetry.update();
                         mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()));
+                        opModeIsActive();
                     }
                     //drive to next square
-                    driveToPosition(1, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
-                    while (leftBackDrive.isBusy()) {
+                    //driveToPosition(squareDist, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
+                    // the above doesn't want to work
+
+                    leftBackDrive.setTargetPosition(leftBackDrive.getCurrentPosition() + squareDist);
+                    leftFrontDrive.setTargetPosition(leftFrontDrive.getCurrentPosition() + squareDist);
+                    rightBackDrive.setTargetPosition(rightBackDrive.getCurrentPosition() + squareDist);
+                    rightFrontDrive.setTargetPosition(rightFrontDrive.getCurrentPosition() + squareDist);
+
+                    leftFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightFrontDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    leftBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightBackDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    leftBackDrive.setPower(0.4);
+                    leftFrontDrive.setPower(0.4);
+                    rightBackDrive.setPower(0.4);
+                    rightFrontDrive.setPower(0.4);
+
+                    sleep(1000);
+
+                    while (!leftBackDrive.isBusy())
+                    {
+                        telemetry.addLine("DRIVING TO TARGET");
+                        telemetry.update();
                         sleep(10);
                     }
+
+                    // stop all motor
+
+                    leftBackDrive.setPower(0.0);
+                    leftFrontDrive.setPower(0.0);
+                    rightBackDrive.setPower(0.0);
+                    rightFrontDrive.setPower(0.0);
+
+
+                    sleep(15000); // temp
+
+//                    while (leftBackDrive.isBusy()) {
+//                        telemetry.addLine("Waiting for leftBackDrive?");
+//                        telemetry.update();
+//                        opModeIsActive();
+//                        sleep(10);
+//                    }
                     //turn 90 ot right
                     pid.setSetpoint(0);
                     while (!pid.atSetpoint()) {
                         mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()));
+                        telemetry.addLine("Rotating to second target");
+                        telemetry.update();
+                        opModeIsActive();
                     }
                     //move to position
-                    driveToPosition(1, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
+                    driveToPosition(squareDist, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
                     while (leftBackDrive.isBusy()) {
                         sleep(10);
+                        opModeIsActive();
                     }
                     phase = 69;
                     break;
                 case 2:
                     //drive forwards to position
-                    driveToPosition(1, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
+                    driveToPosition(squareDist, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
                     while (leftBackDrive.isBusy()) {
                         sleep(10);
+                        opModeIsActive();
                     }
                     phase = 69;
                     break;
@@ -218,21 +276,25 @@ public class SimpleParkAuto extends LinearOpMode
                     pid.setSetpoint(90);
                     while (!pid.atSetpoint()) {
                         mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()));
+                        opModeIsActive();
                     }
                     //drive to next square
-                    driveToPosition(1, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
+                    driveToPosition(squareDist, 0.5, Direction.FORWARDS);
                     while (leftBackDrive.isBusy()) {
                         sleep(10);
+                        opModeIsActive();
                     }
                     //turn 90 to left
                     pid.setSetpoint(0);
                     while (!pid.atSetpoint()) {
                         mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()));
+                        opModeIsActive();
                     }
                     //move to position
-                    driveToPosition(1, 0.5, Direction.FORWARDS); //TODO: get target, 1440 = 360 deg
+                    driveToPosition(squareDist, 0.5, Direction.FORWARDS);
                     while (leftBackDrive.isBusy()) {
                         sleep(10);
+                        opModeIsActive();
                     }
                     phase = 69;
                     break;
@@ -241,7 +303,7 @@ public class SimpleParkAuto extends LinearOpMode
 
 
         /* nice */
-        while (phase != 69);
+        while (phase != 69) { opModeIsActive(); };
     }
 
     void tagToTelemetry(AprilTagDetection detection)
@@ -264,9 +326,12 @@ public class SimpleParkAuto extends LinearOpMode
         switch (direction) {
             case FORWARDS:
                 leftFrontDrive.setPower(Math.abs(power));
-                rightFrontDrive.setPower(Math.abs(power));
+                rightFrontDrive.setPower(-Math.abs(power));
                 leftBackDrive.setPower(Math.abs(power));
-                rightBackDrive.setPower(Math.abs(power));
+                rightBackDrive.setPower(-Math.abs(power));
+                telemetry.addLine("SET LEFT BACK POWER TO: " + (Math.abs(power)));
+                telemetry.update();
+                sleep(5000);
                 break;
             case BACKWARDS:
                 leftFrontDrive.setPower(Math.copySign(power, -1));
@@ -347,8 +412,8 @@ public class SimpleParkAuto extends LinearOpMode
     }
     void driveToPosition(int target, double power, Direction direction) {
         leftFrontDrive.setTargetPosition(target);
-        rightFrontDrive.setTargetPosition(target);
-        rightBackDrive.setTargetPosition(target);
+        rightFrontDrive.setTargetPosition(-target);
+        rightBackDrive.setTargetPosition(-target);
         leftBackDrive.setTargetPosition(target);
         if (    !(leftFrontDrive.getMode() == DcMotor.RunMode.RUN_TO_POSITION) ||
                 !(rightFrontDrive.getMode() == DcMotor.RunMode.RUN_TO_POSITION) ||

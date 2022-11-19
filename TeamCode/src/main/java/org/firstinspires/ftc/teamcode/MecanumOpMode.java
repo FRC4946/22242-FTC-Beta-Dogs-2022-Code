@@ -38,6 +38,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
+ * LIFT TOP POSITION IDEALLY SHOULD BE 9300!!!!
+ * BOTTOM IS 0
+ * MAYBE ADD BUTTON??
+ */
+
+
+/**
  * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
  * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
  * of the FTC Driver Station. When a selection is made from the menu, the corresponding OpMode
@@ -50,7 +57,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear Mecanum OpMode - BETA DOGS", group="Linear Opmode")
+@TeleOp(name="Basic: Linear Mecanum OpMode - BETA DOGS [FINALISH]", group="Linear Opmode")
 //@Disabled
 public class MecanumOpMode extends LinearOpMode {
 
@@ -62,6 +69,8 @@ public class MecanumOpMode extends LinearOpMode {
     private DcMotor rightBackDrive = null;
     private DcMotor liftMotor = null;
     private Servo claw = null;
+
+    private boolean slowMode = false;
 
     @Override
     public void runOpMode() {
@@ -103,6 +112,10 @@ public class MecanumOpMode extends LinearOpMode {
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            if (slowMode)
+            {
+                denominator = denominator / 2; // might need to do * 2?
+            }
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
             double frontRightPower = (y - x - rx) / denominator;
@@ -114,7 +127,7 @@ public class MecanumOpMode extends LinearOpMode {
             rightBackDrive.setPower(backRightPower);
 
 
-            // bull (relating to claw servo)
+            // relating to claw servo
             if (gamepad1.a)
             {
                 claw.setPosition(0.8);
@@ -124,7 +137,25 @@ public class MecanumOpMode extends LinearOpMode {
                 claw.setPosition(0.0);
             }
 
-            // bull (relating to elevator)
+            // speed mode
+            if (gamepad1.x)
+            {
+                slowMode = true;
+            }
+            else if (gamepad1.y)
+            {
+                slowMode = false;
+            }
+
+            if (slowMode)
+            {
+                telemetry.addLine("SLOW MODE");
+            }
+            else {
+                telemetry.addLine("FAST MODE");
+            }
+
+            // relating to elevator
             if (gamepad1.left_trigger > 0.0)
             {
                 liftMotor.setPower(gamepad1.left_trigger * -1);
@@ -148,6 +179,7 @@ public class MecanumOpMode extends LinearOpMode {
             telemetry.addLine("Elevator");
             telemetry.addLine("claw servo pos: " + claw.getPosition());
             telemetry.addLine("Lift Power: " + liftMotor.getPower());
+            telemetry.addLine("Lift Pos: " + liftMotor.getCurrentPosition());
 
             telemetry.update();
         }
