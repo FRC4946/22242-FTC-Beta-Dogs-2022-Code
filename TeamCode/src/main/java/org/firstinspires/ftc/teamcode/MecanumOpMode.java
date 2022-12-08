@@ -34,6 +34,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.LED;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -114,7 +115,7 @@ public class MecanumOpMode extends LinearOpMode {
             double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
             if (slowMode)
             {
-                denominator = denominator / 2; // might need to do * 2?
+                denominator = denominator * 2; // might need to do * 2?
             }
             double frontLeftPower = (y + x + rx) / denominator;
             double backLeftPower = (y - x + rx) / denominator;
@@ -158,13 +159,45 @@ public class MecanumOpMode extends LinearOpMode {
             // relating to elevator
             if (gamepad1.left_trigger > 0.0)
             {
+                liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 liftMotor.setPower(gamepad1.left_trigger * -1);
             }
-            else if (gamepad1.right_trigger > 0.0) {
+            else if (gamepad1.right_trigger > 0.0 && liftMotor.getCurrentPosition() <= 9500) {
+                liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
                 liftMotor.setPower(gamepad1.right_trigger);
             }
             else {
-                liftMotor.setPower(0);
+                if (liftMotor.getMode() != DcMotor.RunMode.RUN_TO_POSITION)
+                {
+                    liftMotor.setPower(0);
+                }
+            }
+
+            // preset location
+            if (gamepad1.right_bumper)
+            {
+                // up (9300)
+                //set mode to motor for drive to position
+                //set target position
+                //give power
+
+                liftMotor.setTargetPosition(9250);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setPower(1.0);
+
+            }
+            else if (gamepad1.left_bumper)
+            {
+                // down
+                liftMotor.setTargetPosition(0);
+                liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                liftMotor.setPower(1.0);
+            }
+            else if (gamepad1.dpad_down)
+            {
+                liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                liftMotor.setTargetPosition(0);
+                liftMotor.setPower(0.0);
             }
 
             // Show the elapsed game time and wheel power.
