@@ -78,7 +78,7 @@ public class SimpleParkAuto extends LinearOpMode
     double cx = 353.64477664507393;
     double cy = 263.136868520393;
 
-    double p = 0.11;
+    double p = 0.125;
     double i = 0.0;
     double d = 0.0;
 
@@ -229,6 +229,22 @@ public class SimpleParkAuto extends LinearOpMode
             sleep(5);
         }
 
+        // EJECT THE SIGNAL CONE. IT ENDS UP IN OUR GUIDE AND THROWS STUFF OFF
+        driveToPosition((int)Math.floor(-squareDist * 0.5), 1.0, Direction.FORWARDS);
+        while (isAnyActive() && opModeIsActive())
+        {
+            sleep(5);
+        }
+        sleep(500);
+        // undo that
+        driveToPosition((int)Math.floor(-squareDist * -0.5), 1.0, Direction.FORWARDS);
+        while (isAnyActive() && opModeIsActive())
+        {
+            sleep(5);
+        }
+        sleep(500);
+        // EMD OF EJECT CODE
+
         // rotate 45 degrees to the LEFT, need a RIGHT program later
         pid.setSetpoint(45); // yes, this is to the left
         PIDToTelemetry(pid);
@@ -239,6 +255,9 @@ public class SimpleParkAuto extends LinearOpMode
             mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()), false);
             sleep(10);
         }
+
+
+
 
         // drive forward a lil
         driveToPosition((int)Math.floor(-squareDist * 0.48), 1.0, Direction.FORWARDS);
@@ -270,7 +289,7 @@ public class SimpleParkAuto extends LinearOpMode
             sleep(10);
         }
 
-        
+        sleep(250);
 
 
 
