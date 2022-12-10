@@ -59,7 +59,7 @@ import org.firstinspires.  ftc.teamcode.PIDController;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear Mecanum OpMode PID TUNING - BETA DOGS", group="Linear Opmode")
+@TeleOp(name="Basic: Linear Mecanum OpMode PID TUNING - BETA DOGS", group="!Beta Dogs Linear Opmode")
 //@Disabled
 public class PIDTuning extends LinearOpMode {
 

@@ -48,8 +48,8 @@ import org.firstinspires.ftc.teamcode.PIDController;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-@Autonomous(name = "SimpleParkAuto (w/ CONE)", group = "!Beta Dogs Auto")
-public class SimpleParkAuto extends LinearOpMode
+@Autonomous(name = "Simple Park Auto (STRIPPED NO CONE)", group = "!Beta Dogs Auto")
+public class SimplestParkAuto extends LinearOpMode
 {
     //TODO: EACH ROTATION OF THE WHEELS IS 49CM
     OpenCvCamera camera;
@@ -173,23 +173,6 @@ public class SimpleParkAuto extends LinearOpMode
         telemetry.update();
 
         // wait for a button to be pressed
-        int initTurn = 0; // turn that is passed into the autonomous cone placement, everything else is fundamentally identical
-        while (initTurn == 0)
-        {
-            if (gamepad1.dpad_left)
-            {
-                initTurn = -45; // opposite to what it should be but its how it be
-                telemetry.addLine();
-                telemetry.addLine("INIT FOR LEFT SIDE");
-            }
-            else if (gamepad1.dpad_right)
-            {
-                initTurn = 45; // opposite to what it should be but its how it be
-                telemetry.addLine();
-                telemetry.addLine("INIT FOR RIGHT SIDE");
-            }
-            sleep(10);
-        }
 
         telemetry.addLine("Init. Waiting for start.");
         telemetry.update();
@@ -216,6 +199,7 @@ public class SimpleParkAuto extends LinearOpMode
                         tagOfInterest = tag;
                         tagFound = true;
                         telemetry.addLine("FOUND TAG!!!");
+                        telemetry.update();
                         sleep(500);
                         break;
                     }
@@ -226,135 +210,36 @@ public class SimpleParkAuto extends LinearOpMode
                 } else {
                     telemetry.addLine("No Tags Found!");
                 }
+                telemetry.update();
                 sleep(20);
             }
         }
 
-        telemetry.update();
-
-        sleep(1000);
-        // TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP
-
-        for (int i = 0; i < 20; i++) {
-            if (tagOfInterest == null) {
-                telemetry.addLine("tagOfInterest NULL");
-                telemetry.addLine("tagOfInterest: " + tagOfInterest.toString());
-            }
-            else {
-                telemetry.addLine("tagOfInterest is NOT null");
-                telemetry.addLine("ID: " + tagOfInterest.id);
-            }
-            telemetry.update();
-            sleep(2500);
-        }
-
-        sleep(99999999);
-
-        // TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP
-
+        sleep(500);
         //telemetry.addLine("TAG ID IS " + tagOfInterest.id);
         //telemetry.update();
 
-        //sleep(999999);
         sleep(500);
-
-
-        // lift motor up a wee bit
-        // 0.8 = dropping
-        // 0.0 = picking up
-        claw.setPosition(0.0);
-        sleep(750);
-        liftMotor.setTargetPosition(9300);
-        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        liftMotor.setPower(1.0);
-        sleep(1500);
-        // drive forward a bit
-        driveToPosition((int)Math.floor(-squareDist * 2.425), 0.25, Direction.FORWARDS);
-        while (isAnyActive() && opModeIsActive())
-        {
-            sleep(5);
-        }
-
-        // EJECT THE SIGNAL CONE. IT ENDS UP IN OUR GUIDE AND THROWS STUFF OFF
-        driveToPosition((int)Math.floor(-squareDist * 0.5), 0.65, Direction.FORWARDS);
-        while (isAnyActive() && opModeIsActive())
-        {
-            sleep(5);
-        }
-        sleep(500);
-        // undo that
-        driveToPosition((int)Math.floor(-squareDist * -0.5), 0.65, Direction.FORWARDS);
-        while (isAnyActive() && opModeIsActive())
-        {
-            sleep(5);
-        }
-        sleep(500);
-        // EMD OF EJECT CODE
-
-        // rotate 45 degrees to the LEFT, need a RIGHT program later
-        pid.setSetpoint(initTurn); // yes, this is to the left
-        PIDToTelemetry(pid);
-        telemetry.update();
-        while (!pid.atSetpoint() && opModeIsActive()) {
-            PIDToTelemetry(pid);
-            telemetry.update();
-            mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()), false);
-            sleep(10);
-        }
-
-        // drive forward a lil
-        driveToPosition((int)Math.floor(-squareDist * 0.35), 0.5, Direction.FORWARDS);
-        while (isAnyActive() && opModeIsActive())
-        {
-            sleep(5);
-        }
-        sleep(500);
-        claw.setPosition(0.8);
-        sleep(2500);
-        // back up a lil
-
-        liftMotor.setTargetPosition(1000); // vaguely reset it, not important for auto past this point but sets us up for less work in teleop
-
-        driveToPosition((int)Math.floor(-squareDist * -0.48), 0.5, Direction.FORWARDS);
-        while (isAnyActive() && opModeIsActive())
-        {
-            sleep(5);
-        }
-        sleep(1250);
-
-        pid.setSetpoint(1); // crazy idea
-        PIDToTelemetry(pid);
-        telemetry.update();
-        while (!pid.atSetpoint() && opModeIsActive()) {
-            PIDToTelemetry(pid);
-            telemetry.update();
-            mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()), false);
-            sleep(22);
-        }
-
-
-
-
-
-        //stopMotors();
-
-        // END OF TEMP BLOCK OF CODE
-
 
         // Does the code
         if(tagOfInterest == null)
         {
             telemetry.addLine("No tags!");
             telemetry.update();
-
-            while (true) {
-                telemetry.addLine("NO TAG");
-                telemetry.update();
-                sleep(1000);
-            }
         }
         else
         {
+
+            tagToTelemetry(tagOfInterest);
+
+            telemetry.update();
+
+            // get away from the god damn wall (makes turning awkward);
+            driveToPosition((int)Math.floor(-squareDist * 0.2), 1.0, Direction.FORWARDS);
+            while (isAnyActive() && opModeIsActive())
+            {
+                sleep(5);
+            }
 
             c++;
             stopAndResetEncoders();
@@ -376,10 +261,28 @@ public class SimpleParkAuto extends LinearOpMode
                         sleep(10);
                     }
                     stopAndResetEncoders();
+                    //turn 90 ot right
+                    pid.setSetpoint(0);
+                    PIDToTelemetry(pid);
+                    telemetry.update();
+                    while (!pid.atSetpoint() && opModeIsActive()) {
+                        mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()), false);
+                        sleep(10);
+                    }
+                    //move to position
+                    driveToPosition((int)Math.floor(-squareDist * 1.65), 1.0, Direction.FORWARDS);
+                    while (isAnyActive()) {
+                        sleep(10);
+                    }
+                    stopAndResetEncoders();
                     phase = 69;
                     break;
                 case 2:
-                    // 🎉
+                    //drive forwards to position
+                    driveToPosition((int)Math.floor(-squareDist * 1.65), 1.0, Direction.FORWARDS);
+                    while (isAnyActive()) {
+                        sleep(10);
+                    }
                     stopAndResetEncoders();
                     phase = 69;
                     break;
@@ -395,6 +298,20 @@ public class SimpleParkAuto extends LinearOpMode
                     stopAndResetEncoders();
                     //drive to next square
                     driveToPosition((int)Math.floor(-squareDist * 1.1), 1.0, Direction.FORWARDS);
+                    while (isAnyActive()) {
+                        sleep(10);
+                    }
+                    stopAndResetEncoders();
+                    //turn 90 to left
+                    pid.setSetpoint(0);
+                    PIDToTelemetry(pid);
+                    telemetry.update();
+                    while (!pid.atSetpoint() && opModeIsActive()) {
+                        mecanumDrive(Direction.ROTATE_PID, pid.calculate(getAngle()), false);
+                        sleep(10);
+                    }
+                    //move to position
+                    driveToPosition((int)Math.floor(-squareDist * 1.65), 1.0, Direction.FORWARDS);
                     while (isAnyActive()) {
                         sleep(10);
                     }
