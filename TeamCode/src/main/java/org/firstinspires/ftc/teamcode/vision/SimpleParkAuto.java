@@ -139,7 +139,7 @@ public class SimpleParkAuto extends LinearOpMode
 
         pid = new PIDController(p, i, d);
 
-        pid.setTolerance(0.25);
+        pid.setTolerance(0.35);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
@@ -207,7 +207,7 @@ public class SimpleParkAuto extends LinearOpMode
         int tagIdOfInterest = -1;
 
 
-        while (currentDetections.size() == 0 && c == 0 && opModeIsActive()) {
+        while (tagOfInterest == null && opModeIsActive()) {
             currentDetections = aprilTagDetectionPipeline.getLatestDetections();
             if (currentDetections.size() != 0) {
                 boolean tagFound = false;
@@ -234,11 +234,10 @@ public class SimpleParkAuto extends LinearOpMode
 
         sleep(1000);
         // TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP
-
+        /*
         for (int i = 0; i < 20; i++) {
             if (tagOfInterest == null) {
                 telemetry.addLine("tagOfInterest NULL");
-                telemetry.addLine("tagOfInterest: " + tagOfInterest.toString());
             }
             else {
                 telemetry.addLine("tagOfInterest is NOT null");
@@ -248,7 +247,7 @@ public class SimpleParkAuto extends LinearOpMode
             sleep(2500);
         }
 
-        sleep(99999999);
+        sleep(99999999);*/
 
         // TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP TEMP
 
@@ -340,6 +339,14 @@ public class SimpleParkAuto extends LinearOpMode
 
         // END OF TEMP BLOCK OF CODE
 
+        boolean randomBool = true;
+/*
+        while (randomBool) {
+            telemetry.addData("TAG ID!!!", tagOfInterest.id );
+            telemetry.update();
+            sleep(500);
+
+        }*/
 
         // Does the code
         if(tagOfInterest == null)

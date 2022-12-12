@@ -139,7 +139,7 @@ public class SimplestParkAuto extends LinearOpMode
 
         pid = new PIDController(p, i, d);
 
-        pid.setTolerance(0.25);
+        pid.setTolerance(0.35);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);

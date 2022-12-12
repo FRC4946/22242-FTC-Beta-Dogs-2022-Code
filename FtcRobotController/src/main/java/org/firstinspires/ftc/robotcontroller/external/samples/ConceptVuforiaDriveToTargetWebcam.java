@@ -66,7 +66,7 @@ public class ConceptVuforiaDriveToTargetWebcam extends LinearOpMode
      * and paste it in to your code on the next line, between the double quotes.
      */
     private static final String VUFORIA_KEY =
-            "AZd24o//////AAABmYMUuhGK1UGInyXSqppRCBk+psmsfkceQXgQkELYZkZFPWHe55y9eQUQP/6KDYFws9jJOFKXZlwIMbs323xH4IbPToivAM94SaOvAmEqHGolE/Fv8kwWny/y55XqBQ5w75M8yv6QlxO8pWM3IAQjltBulmZY5VrT0aVmRNQGJtGmwGNXhgnMXpKCImyCmpftszsnus3hAaA/5Z1NylOteBqWCgznZ2pkSn9Jwz4DJUL1MTX1z4uumSjd8zOelga27tzcYgJKdqzydqDhuStTMFaIhnVl7yUEhA4xcGAkScrNldoRlThXhvzUJXPU6QxqBzmSS+M8R6WF9RF48w0N53xYBnQDeQiKozlgZ1Q6c2mV";
+            " --- YOUR NEW VUFORIA KEY GOES HERE  --- ";
 
     VuforiaLocalizer vuforia    = null;
     OpenGLMatrix targetPose     = null;
