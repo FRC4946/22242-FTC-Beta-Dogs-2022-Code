@@ -334,8 +334,8 @@ public class SimpleParkAuto extends LinearOpMode
 
 
 
-
         //stopMotors();
+
 
         // END OF TEMP BLOCK OF CODE
 
@@ -362,7 +362,7 @@ public class SimpleParkAuto extends LinearOpMode
         }
         else
         {
-
+;
             c++;
             stopAndResetEncoders();
             switch (tagOfInterest.id) {

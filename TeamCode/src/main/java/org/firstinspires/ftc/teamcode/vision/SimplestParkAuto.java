@@ -111,9 +111,6 @@ public class SimplestParkAuto extends LinearOpMode
         rightBackDrive = hardwareMap.get(DcMotor.class, "back right drive");
         liftMotor = hardwareMap.get(DcMotor.class, "lift motor");
         claw = hardwareMap.get(Servo.class, "claw"); // needs to be looked into, acting up, likely hardware.
-        ////clawLeft = hardwareMap.get(CRServo.class, "left claw");
-        ////clawRight = hardwareMap.get(CRServo.class, "right claw");
-        ////clawSpinner = hardwareMap.get(Servo.class, "claw spinner");
 
         leftFrontDrive.setDirection(DcMotor.Direction.REVERSE);
         rightFrontDrive.setDirection(DcMotor.Direction.FORWARD);
@@ -162,17 +159,6 @@ public class SimplestParkAuto extends LinearOpMode
         });
 
         telemetry.setMsTransmissionInterval(50);
-
-        // WE NEED TO KNOW IF WE ARE ON THE LEFT OR THE RIGHT SIDE!!!
-        // LOUD NOISES
-        for (int i = 0; i < 15; i++)
-        {
-            telemetry.addLine("PRESS LEFT DPAD OR RIGHT DPAD TO SET TEAM");
-            telemetry.addLine("DO THIS BEFORE THEY RANDOMIZE THE FIELD");
-        }
-        telemetry.update();
-
-        // wait for a button to be pressed
 
         telemetry.addLine("Init. Waiting for start.");
         telemetry.update();
